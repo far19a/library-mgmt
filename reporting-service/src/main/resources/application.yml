@@ -1,0 +1,17 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5436/reportdb}
+    username: ${SPRING_DATASOURCE_USERNAME:user}
+    password: ${SPRING_DATASOURCE_PASSWORD:secret}
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+services:
+  book:
+    url: ${BOOK_SERVICE_URL:http://localhost:8081}
+  borrowing:
+    url: ${BORROWING_SERVICE_URL:http://localhost:8083}

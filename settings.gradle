@@ -1,0 +1,6 @@
+rootProject.name = "library-management-system"
+
+include("book-service")
+include("member-service")
+include("borrowing-service")
+include("reporting-service")

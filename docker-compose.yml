@@ -1,0 +1,110 @@
+services:
+  book-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: bookdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5433:5432"
+    volumes:
+      - book-data:/var/lib/postgresql/data
+
+  member-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: memberdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5434:5432"
+    volumes:
+      - member-data:/var/lib/postgresql/data
+
+  borrowing-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: borrowdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5435:5432"
+    volumes:
+      - borrow-data:/var/lib/postgresql/data
+
+  report-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: reportdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5436:5432"
+    volumes:
+      - report-data:/var/lib/postgresql/data
+
+  book-service:
+    build:
+      context: .
+      dockerfile: book-service/Dockerfile
+    depends_on:
+      - book-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://book-db:5432/bookdb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: secret
+    ports:
+      - "8081:8081"
+
+  member-service:
+    build:
+      context: .
+      dockerfile: member-service/Dockerfile
+    depends_on:
+      - member-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://member-db:5432/memberdb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: secret
+    ports:
+      - "8082:8082"
+
+  borrowing-service:
+    build:
+      context: .
+      dockerfile: borrowing-service/Dockerfile
+    depends_on:
+      - borrowing-db
+      - book-service
+      - member-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://borrowing-db:5432/borrowdb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: secret
+      BOOK_SERVICE_URL: http://book-service:8081
+      MEMBER_SERVICE_URL: http://member-service:8082
+    ports:
+      - "8083:8083"
+
+  reporting-service:
+    build:
+      context: .
+      dockerfile: reporting-service/Dockerfile
+    depends_on:
+      - report-db
+      - book-service
+      - borrowing-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://report-db:5432/reportdb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: secret
+      BOOK_SERVICE_URL: http://book-service:8081
+      BORROWING_SERVICE_URL: http://borrowing-service:8083
+    ports:
+      - "8084:8084"
+
+volumes:
+  book-data:
+  member-data:
+  borrow-data:
+  report-data:
